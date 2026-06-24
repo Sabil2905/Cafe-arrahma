@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق مقهى الرحمة الشامل</title>
+    <style>
+        :root {
+            --primary-color: #8B5A2B;
+            --secondary-color: #F4E8C1;
+            --dark-color: #3E2723;
+            --light-color: #FFFFFF;
+            --accent-color: #4CAF50;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #F5F5F5; color: var(--dark-color); padding-bottom: 70px; }
+        header { background-color: var(--primary-color); color: var(--light-color); text-align: center; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-size: 24px; }
+        header p { font-size: 14px; opacity: 0.9; margin-top: 5px; }
+        
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; }
+        .card { background: var(--light-color); padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .card h2 { font-size: 18px; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid var(--secondary-color); padding-bottom: 5px; }
+        
+        /* القائمة السفلى */
+        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--light-color); display: flex; justify-content: space-around; padding: 10px 0; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { border: none; background: none; color: #757575; font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; width: 20%; }
+        .nav-item.active { color: var(--primary-color); font-weight: bold; }
+        .nav-item .icon { font-size: 20px; margin-bottom: 2px; }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        /* الجداول والقوائم */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #E0E0E0; padding: 10px; text-align: right; }
+        th { background-color: var(--secondary-color); color: var(--dark-color); }
+        tr:nth-child(even) { background-color: #FAFAFA; }
+        
+        .btn { background-color: var(--primary-color); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .btn-accent { background-color: var(--accent-color); }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; border: 1px solid #CCC; border-radius: 6px; font-size: 14px; }
+        
+        .flex-space { display: flex; justify-content: space-between; align-items: center; }
+        .badge { background: #FF9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; }
+        .badge-success { background: var(--accent-color); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="header-title">مقهى الرحمة</h1>
+        <p id="header-subtitle">نظام الإدارة الشامل والمسابقات</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- صفحة الحسابات والديون -->
+        <div id="page-accounts" class="page active">
+            <div class="card">
+                <h2>إضافة كليان جديد / تعديل حساب</h2>
+                <div class="form-group">
+                    <label>اسم الكليان:</label>
+                    <input type="text" id="acc-name" placeholder="مثال: محمد، أحمد...">
+                </div>
+                <div class="form-group">
+                    <label>المبلغ (درهم):</label>
+                    <input type="number" id="acc-amount" placeholder="مثال: 50 أو -20">
+                </div>
+                <div class="form-group">
+                    <label>العملية:</label>
+                    <select id="acc-type">
+                        <option value="debt">عليه دين (+)</option>
+                        <option value="pay">خلص / دفع (-)</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="addAccount()">تسجيل العملية</button>
+            </div>
+
+            <div class="card">
+                <h2>سجل ديون وحسابات الكليان</h2>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الحساب الحالي</th>
+                                <th>تاريخ آخر عملية</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accounts-table-body">
+                            <!-- البيانات تظهر هنا ديناميكياً -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- صفحة المينيو -->
+        <div id="page-menu" class="page">
+            <div class="card">
+                <h2>قائمة المشروبات والمأكولات</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المشروب / المنتج</th>
+                            <th>الثمن (درهم)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>قهوة سوداء (بريس)</td><td>80.00 ريال (4 دراهم)</td></tr>
+                        <tr><td>قهوة حليب</td><td>100.00 ريال (5 دراهم)</td></tr>
+                        <tr><td>شاي منعنع</td><td>80.00 ريال (4 دراهم)</td></tr>
+                        <tr><td>عصير برتقال طازج</td><td>200.00 ريال (10 دراهم)</td></tr>
+                        <tr><td>ماء معدني صغير</td><td>60.00 ريال (3 دراهم)</td></tr>
+                        <tr><td>ماء معدني كبير</td><td>100.00 ريال (5 دراهم)</td></tr>
+                        <tr><td>مشروب غازي</td><td>120.00 ريال (6 دراهم)</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- صفحة الواي فاي -->
+        <div id="page-wifi" class="page">
+            <div class="card" style="text-align: center; padding: 30px 15px;">
+                <h2>معلومات شبكة الواي فاي للمقهى</h2>
+                <div style="font-size: 50px; margin: 15px 0;">📶</div>
+                <p style="font-size: 18px; margin-bottom: 10px;">اسم الشبكة (SSID): <br><strong>Café Arrahma WiFi</strong></p>
+                <p style="font-size: 18px; color: var(--primary-color);">كود الواي فاي (Password): <br><strong style="background: #EEE; padding: 5px 10px; border-radius: 6px; letter-spacing: 1px;">Arrahma@2026</strong></p>
+            </div>
+        </div>
+
+        <!-- صفحة جدول المباريات -->
+        <div id="page-matches" class="page">
+            <div class="card">
+                <h2>جدول مباريات اليوم والأسبوع</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المباراة</th>
+                            <th>التوقيت</th>
+                            <th>المنافسة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>المغرب 🆚 إسبانيا</td><td>19:00</td><td>كأس العالم 2026</td></tr>
+                        <tr><td>العراق 🆚 النرويج</td><td>16:00</td><td>مباراة ودية</td></tr>
+                        <tr><td>ريال مدريد 🆚 برشلونة</td><td>20:00</td><td>الدوري الإسباني</td></tr>
+                        <tr><td>الرجاء 🆚 الوداد</td><td>17:00</td><td>البطولة الاحترافية</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- صفحة مسابقات التوقعات -->
+        <div id="page-games" class="page">
+            <div class="card">
+                <h2>توقع واربح مع مقهى الرحمة</h2>
+                <p style="font-size: 14px; margin-bottom: 15px; color: #666;">سجل توقعات الزبناء لمباريات اليوم. صاحب التوقع الصحيح يفوز بـ (قهوة فابور!).</p>
+                
+                <div class="form-group">
+                    <label>اسم الزبون:</label>
+                    <input type="text" id="game-user" placeholder="اسم الزبون">
+                </div>
+                <div class="form-group">
+                    <label>المباراة:</label>
+                    <select id="game-match">
+                        <option value="المغرب - إسبانيا">المغرب 🆚 إسبانيا</option>
+                        <option value="الرجاء - الوداد">الرجاء 🆚 الوداد</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>التوقع (النتيجة المسجلة):</label>
+                    <input type="text" id="game-predict" placeholder="مثال: 2-1 للمغرب">
+                </div>
+                <button class="btn btn-accent" onclick="addPrediction()">تسجيل التوقع</button>
+            </div>
+
+            <div class="card">
+                <h2>سجل توقعات اليوم</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الزبون</th>
+                            <th>المباراة</th>
+                            <th>التوقع</th>
+                        </tr>
+                    </thead>
+                    <tbody id="predictions-table-body">
+                        <!-- التوقعات تظهر هنا -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- شريط التنقل السفلي -->
+    <nav class="nav-bar">
+        <button class="nav-item active" onclick="switchPage('accounts', this)">
+            <span class="icon">👥</span><span>الحسابات</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('menu', this)">
+            <span class="icon">☕</span><span>المينيو</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('wifi', this)">
+            <span class="icon">📶</span><span>الواي فاي</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('matches', this)">
+            <span class="icon">⚽</span><span>المباريات</span>
+        </button>
+        <button class="nav-item" onclick="switchPage('games', this)">
+            <span class="icon">🏆</span><span>المسابقة</span>
+        </button>
+    </nav>
+
+    <script>
+        // قواعد البيانات المحلية لحفظ البيانات ف الهاتف مباشرة
+        let accounts = JSON.parse(localStorage.getItem('cafe_accounts')) || {
+            'محمد أمين': { balance: 45, date: '2026-06-20' },
+            'با علال': { balance: 120, date: '2026-06-22' },
+            'ياسين': { balance: -10, date: '2026-06-23' }
+        };
+
+        let predictions = JSON.parse(localStorage.getItem('cafe_predictions')) || [];
+
+        // تنقيل بين الصفحات
+        function switchPage(pageId, button) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('page-' + pageId).classList.add('active');
+            button.classList.add('active');
+            
+            // تغيير عنوان الهيدر حسب الصفحة
+            const titles = {
+                'accounts': 'حسابات وديون الزبناء',
+                'menu': 'قائمة مقهى الرحمة',
+                'wifi': 'الواي فاي المجاني',
+                'matches': 'مباريات اليوم',
+                'games': 'مسابقة التوقعات والجوائز'
+            };
+            document.getElementById('header-title').innerText = titles[pageId];
+        }
+
+        // تحديث جدول الحسابات
+        function updateAccountsTable() {
+            const tbody = document.getElementById('accounts-table-body');
+            tbody.innerHTML = '';
+            for (let name in accounts) {
+                let bal = accounts[name].balance;
+                let badgeClass = bal > 0 ? 'badge' : 'badge-success';
+                let txt = bal > 0 ? `${bal} درهم (عليه)` : `${Math.abs(bal)} درهم (يسال)`;
+                if(bal == 0) txt = 'خالص';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${name}</strong></td>
+                        <td><span class="${badgeClass}">${txt}</span></td>
+                        <td>${accounts[name].date}</td>
+                    </tr>
+                `;
+            }
+            localStorage.setItem('cafe_accounts', JSON.stringify(accounts));
+        }
+
+        // إضافة أو تعديل حساب كليان
+        function addAccount() {
+            const name = document.getElementById('acc-name').value.trim();
+            let amount = parseFloat(document.getElementById('acc-amount').value);
+            const type = document.getElementById('acc-type').value;
+            const today = new Date().toISOString().split('T')[0];
+
+            if(!name || isNaN(amount)) {
+                alert('عافاك دخل اسم الكليان والمبلغ صحيح!');
+                return;
+            }
+
+            if(type === 'pay') {
+                amount = -amount; // إنقاص من الدين
+            }
+
+            if(accounts[name]) {
+                accounts[name].balance += amount;
+                accounts[name].date = today;
+            } else {
+                accounts[name] = { balance: amount, date: today };
+            }
+
+            document.getElementById('acc-name').value = '';
+            document.getElementById('acc-amount').value = '';
+            updateAccountsTable();
+            alert('تم تسجيل العملية بنجاح ف الهاتف!');
+        }
+
+        // إضافة توقع جديد للمسابقة
+        function addPrediction() {
+            const user = document.getElementById('game-user').value.trim();
+            const match = document.getElementById('game-match').value;
+            const predict = document.getElementById('game-predict').value.trim();
+
+            if(!user || !predict) {
+                alert('عافاك دخل اسم الزبون والتوقع ديالو!');
+                return;
+            }
+
+            predictions.push({ user, match, predict });
+            document.getElementById('game-user').value = '';
+            document.getElementById('game-predict').value = '';
+            
+            updatePredictionsTable();
+            alert('تم تسجيل التوقع بنجاح!');
+        }
+
+        // تحديث جدول التوقعات
+        function updatePredictionsTable() {
+            const tbody = document.getElementById('predictions-table-body');
+            tbody.innerHTML = '';
+            predictions.forEach(p => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${p.user}</td>
+                        <td>${p.match}</td>
+                        <td><strong style="color: green;">${p.predict}</strong></td>
+                    </tr>
+                `;
+            });
+            localStorage.setItem('cafe_predictions', JSON.stringify(predictions));
+        }
+
+        // تشغيل الجداول عند أول دخول
+        updateAccountsTable();
+        updatePredictionsTable();
+    </script>
+</body>
+</html>
